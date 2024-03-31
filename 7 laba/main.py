@@ -1,9 +1,9 @@
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-from sklearn.linear_model import LinearRegression
 from sklearn.tree import DecisionTreeRegressor
 import matplotlib.pyplot as plt
+from sklearn.preprocessing import OneHotEncoder, MinMaxScaler
 
 # Читаем нах файл с данными
 df = pd.read_csv("audi.csv")
@@ -47,11 +47,11 @@ for col in num_columns:
 # Принт для проверки закодированных данных
 #print(df)    
 
-# Проверяем данные в каждой колонке на присутствие выбросов 
-print(df['year'].unique())
-print(df['price'].unique())
-print(df['mileage'].unique()) # значения в колонках достаточно ровные, но все же можно сузить выборку
-                              # по колонкам mileage и price для упрощения обучения
+# # Проверяем данные в каждой колонке на присутствие выбросов 
+# print(df['year'].unique())
+# print(df['price'].unique())
+# print(df['mileage'].unique()) # значения в колонках достаточно ровные, но все же можно сузить выборку
+#                               # по колонкам mileage и price для упрощения обучения
 
 # Для устранения выбросов используем Z-функцию, которая усредняет значение в выбранной колоке
 def detect_outliers_zscore(data, threshold=3):
@@ -71,31 +71,17 @@ y = df['price']
 
 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2, random_state=42)
 
-# Так как предсказание цен это задача регрессии я попробую несколько моделей и выберу лучшую
-# Линейня регрессия
-lr = LinearRegression().fit(x_train, y_train)
-
 # Регрессионное дерево решений
 dtr = DecisionTreeRegressor(random_state=42).fit(x_train, y_train)
 
 # Предсказание
-y_pred1 = lr.predict(x_test)
 y_pred2 = dtr.predict(x_test)
 
-print("Linear Regression score:", lr.score(x_test, y_pred1))
+# Выводим скор моделей с помощью встроенного метода score
 print("Descision Tree Regressor score:", dtr.score(x_test, y_pred2))
 
-# График предсказания линейной регресси
-plt.scatter(range(len(y_test)), y_test, color='blue', label='Фактические значения', alpha=0.3)
-plt.scatter(range(len(y_pred1)), y_pred1, color='red', label='Предсказанные значения после округления', alpha=0.3)
-plt.xlabel('Настоящая цена')
-plt.ylabel('Предсказанная цена LR')
-plt.title('Сравнение фактических и предсказанных значений')
-
-plt.show()
-
 # График предсказания регрессионного дерева решений
-plt.scatter(y_test, y_pred2)
+plt.scatter(y_test, y_pred2, alpha=0.2)
 plt.plot([0, max(y_test)], [0, max(y_pred2)]) 
 plt.xlabel('Настоящая цена')
 plt.ylabel('Предсказанная цена DTR')
